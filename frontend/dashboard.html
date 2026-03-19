@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base href="/frontend/">
+    <title>Painel | Portal Vida Livre</title>
+    <link rel="stylesheet" href="./assets/css/styles.css">
+</head>
+<body data-page="dashboard">
+    <header class="site-header">
+        <div class="container header-row">
+            <a class="brand" href="./index.html">Portal Vida Livre</a>
+            <nav class="nav">
+                <a href="./dashboard.html" aria-current="page">Painel</a>
+                <button type="button" class="nav-button" data-logout>Sair</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="panel">
+            <h1>Painel</h1>
+            <p class="page-text">Sessao autenticada.</p>
+            <div class="message hidden" data-message></div>
+
+            <div class="info-list">
+                <p><strong>Nome:</strong> <span data-current-user-name>-</span></p>
+                <p><strong>E-mail:</strong> <span data-current-user-email>-</span></p>
+            </div>
+        </section>
+    </main>
+
+    <script src="./assets/js/api.js" defer></script>
+    <script src="./assets/js/auth.js" defer></script>
+</body>
+</html>

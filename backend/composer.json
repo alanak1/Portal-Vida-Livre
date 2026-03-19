@@ -1,0 +1,10 @@
+{
+  "name": "portal-vida-livre/backend",
+  "description": "Backend JSON em PHP puro para o Portal Vida Livre.",
+  "type": "project",
+  "require": {
+    "php": ">=8.1",
+    "phpmailer/phpmailer": "^6.9"
+  }
+}
+

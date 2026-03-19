@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base href="/frontend/">
+    <title>Cadastro | Portal Vida Livre</title>
+    <link rel="stylesheet" href="./assets/css/styles.css">
+</head>
+<body data-page="cadastro">
+    <header class="site-header">
+        <div class="container header-row">
+            <a class="brand" href="./index.html">Portal Vida Livre</a>
+            <nav class="nav">
+                <a href="./login.html">Entrar</a>
+                <a href="./cadastro.html" aria-current="page">Cadastro</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="panel">
+            <h1>Criar conta</h1>
+            <p class="page-text">Cadastre-se para acessar o portal.</p>
+            <div class="message hidden" data-message></div>
+
+            <form id="register-form" class="form" novalidate>
+                <div class="form-group">
+                    <label for="name">Nome</label>
+                    <input id="name" name="name" type="text" autocomplete="name">
+                    <small class="field-error" data-error-for="name"></small>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <input id="email" name="email" type="email" autocomplete="email">
+                    <small class="field-error" data-error-for="email"></small>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input id="password" name="password" type="password" autocomplete="new-password">
+                    <small class="field-error" data-error-for="password"></small>
+                </div>
+
+                <div class="form-group">
+                    <label for="password_confirmation">Confirmar senha</label>
+                    <input id="password_confirmation" name="password_confirmation" type="password" autocomplete="new-password">
+                    <small class="field-error" data-error-for="password_confirmation"></small>
+                </div>
+
+                <button type="submit">Criar conta</button>
+            </form>
+        </section>
+    </main>
+
+    <script src="./assets/js/api.js" defer></script>
+    <script src="./assets/js/auth.js" defer></script>
+    <script src="./assets/js/cadastro.js" defer></script>
+</body>
+</html>
