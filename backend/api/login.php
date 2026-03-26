@@ -35,6 +35,20 @@ if ($user === null || !password_verify($password, (string) $user['password_hash'
     ], 401);
 }
 
+if (!user_email_is_verified($user)) {
+    try {
+        send_fresh_email_verification_link($user);
+    } catch (\Throwable $throwable) {
+        error_response('Seu cadastro ainda nao foi confirmado e nao foi possivel reenviar o e-mail agora.', [
+            '_general' => ['Seu cadastro ainda nao foi confirmado. Tente novamente em instantes.'],
+        ], 503);
+    }
+
+    error_response('Confirme seu cadastro por e-mail. Enviamos um novo link para o endereco informado.', [
+        '_general' => ['Confirme seu cadastro por e-mail. Enviamos um novo link para o endereco informado.'],
+    ], 403);
+}
+
 $publicUser = login_user($user);
 
 success_response('Login realizado com sucesso.', [

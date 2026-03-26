@@ -33,14 +33,20 @@ function user_public_data(array $user): array
         'id' => (int) $user['id'],
         'name' => (string) $user['name'],
         'email' => (string) $user['email'],
+        'email_verified' => user_email_is_verified($user),
         'created_at' => $user['created_at'] ?? null,
     ];
+}
+
+function user_email_is_verified(array $user): bool
+{
+    return !empty($user['email_verified_at']);
 }
 
 function find_user_by_email(string $email): ?array
 {
     $statement = db()->prepare(
-        'SELECT id, name, email, password_hash, created_at
+        'SELECT id, name, email, password_hash, created_at, email_verified_at
          FROM users
          WHERE email = :email
          LIMIT 1'
@@ -54,7 +60,7 @@ function find_user_by_email(string $email): ?array
 function find_user_by_id(int $id): ?array
 {
     $statement = db()->prepare(
-        'SELECT id, name, email, created_at
+        'SELECT id, name, email, created_at, email_verified_at
          FROM users
          WHERE id = :id
          LIMIT 1'
@@ -78,6 +84,83 @@ function create_user(string $name, string $email, string $password): int
     ]);
 
     return (int) db()->lastInsertId();
+}
+
+function create_raw_token(): string
+{
+    return bin2hex(random_bytes(32));
+}
+
+function hash_raw_token(string $rawToken): string
+{
+    return hash('sha256', $rawToken);
+}
+
+function store_email_verification_token(\PDO $pdo, int $userId): string
+{
+    $rawToken = create_raw_token();
+    $tokenHash = hash_raw_token($rawToken);
+    $expiresAt = date('Y-m-d H:i:s', time() + 86400);
+
+    $deleteStatement = $pdo->prepare('DELETE FROM email_verification_tokens WHERE user_id = :user_id');
+    $deleteStatement->execute(['user_id' => $userId]);
+
+    $insertStatement = $pdo->prepare(
+        'INSERT INTO email_verification_tokens (user_id, token_hash, expires_at)
+         VALUES (:user_id, :token_hash, :expires_at)'
+    );
+    $insertStatement->execute([
+        'user_id' => $userId,
+        'token_hash' => $tokenHash,
+        'expires_at' => $expiresAt,
+    ]);
+
+    return $rawToken;
+}
+
+function register_user_and_send_verification_email(string $name, string $email, string $password): int
+{
+    $pdo = db();
+    $pdo->beginTransaction();
+
+    try {
+        $userId = create_user($name, $email, $password);
+        $token = store_email_verification_token($pdo, $userId);
+
+        send_email_verification_email([
+            'id' => $userId,
+            'name' => $name,
+            'email' => $email,
+        ], $token);
+
+        $pdo->commit();
+    } catch (\Throwable $throwable) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+
+        throw $throwable;
+    }
+
+    return $userId;
+}
+
+function send_fresh_email_verification_link(array $user): void
+{
+    $pdo = db();
+    $pdo->beginTransaction();
+
+    try {
+        $token = store_email_verification_token($pdo, (int) $user['id']);
+        send_email_verification_email($user, $token);
+        $pdo->commit();
+    } catch (\Throwable $throwable) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+
+        throw $throwable;
+    }
 }
 
 function login_user(array $user): array
@@ -139,8 +222,8 @@ function current_user(): ?array
 
 function create_password_reset_token(int $userId): string
 {
-    $rawToken = bin2hex(random_bytes(32));
-    $tokenHash = hash('sha256', $rawToken);
+    $rawToken = create_raw_token();
+    $tokenHash = hash_raw_token($rawToken);
     $expiresAt = date('Y-m-d H:i:s', time() + 3600);
     $pdo = db();
 
@@ -183,7 +266,7 @@ function find_password_reset_token(string $rawToken): ?array
          LIMIT 1'
     );
     $statement->execute([
-        'token_hash' => hash('sha256', $rawToken),
+        'token_hash' => hash_raw_token($rawToken),
     ]);
     $record = $statement->fetch();
 
@@ -211,6 +294,49 @@ function invalidate_user_reset_tokens(int $userId): void
            AND used_at IS NULL'
     );
     $statement->execute(['user_id' => $userId]);
+}
+
+function find_email_verification_token_record(string $rawToken): ?array
+{
+    if ($rawToken === '') {
+        return null;
+    }
+
+    $statement = db()->prepare(
+        'SELECT evt.id, evt.user_id, evt.expires_at, evt.used_at, u.name, u.email, u.email_verified_at
+         FROM email_verification_tokens evt
+         INNER JOIN users u ON u.id = evt.user_id
+         WHERE evt.token_hash = :token_hash
+         LIMIT 1'
+    );
+    $statement->execute([
+        'token_hash' => hash_raw_token($rawToken),
+    ]);
+    $record = $statement->fetch();
+
+    return is_array($record) ? $record : null;
+}
+
+function invalidate_user_email_verification_tokens(int $userId): void
+{
+    $statement = db()->prepare(
+        'UPDATE email_verification_tokens
+         SET used_at = NOW()
+         WHERE user_id = :user_id
+           AND used_at IS NULL'
+    );
+    $statement->execute(['user_id' => $userId]);
+}
+
+function mark_user_email_as_verified(int $userId): void
+{
+    $statement = db()->prepare(
+        'UPDATE users
+         SET email_verified_at = COALESCE(email_verified_at, NOW()),
+             updated_at = NOW()
+         WHERE id = :id'
+    );
+    $statement->execute(['id' => $userId]);
 }
 
 function update_user_password(int $userId, string $password): void
