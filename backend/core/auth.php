@@ -54,7 +54,7 @@ function find_user_by_email(string $email): ?array
        'SELECT id, name, email, password_hash, created_at, email_verified_at,
                 two_factor_enabled, two_factor_secret_encrypted,
                 two_factor_temp_secret_encrypted,
-                two_factor_confirmed_at, two_factor_temp_secret_created_at, 
+                two_factor_confirmed_at, two_factor_temp_secret_created_at
          FROM users
          WHERE email = :email
          LIMIT 1'
@@ -68,7 +68,7 @@ function find_user_by_email(string $email): ?array
 function find_user_by_id(int $id): ?array
 {
     $statement = db()->prepare(
-        'SELECT id, name, email, created_at, email_verified_at
+        'SELECT id, name, email, created_at, email_verified_at,
                 two_factor_enabled, two_factor_confirmed_at
          FROM users
          WHERE id = :id
