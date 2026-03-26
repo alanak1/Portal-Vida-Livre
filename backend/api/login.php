@@ -47,6 +47,13 @@ if (!user_email_is_verified($user)) {
     error_response('Confirme seu cadastro por e-mail. Enviamos um novo link para o endereco informado.', [
         '_general' => ['Confirme seu cadastro por e-mail. Enviamos um novo link para o endereco informado.'],
     ], 403);
+if ((bool) ($user['two_factor_enabled'] ?? false) && !empty($user['two_factor_secret_encrypted'])) {
+    start_two_factor_pending((int) $user['id']);
+
+    success_response('Codigo de verificacao necessario.', [
+        'requires_2fa' => true,
+        'csrf_token' => rotate_csrf_token(),
+    ]);
 }
 
 $publicUser = login_user($user);
@@ -55,4 +62,3 @@ success_response('Login realizado com sucesso.', [
     'user' => $publicUser,
     'csrf_token' => rotate_csrf_token(),
 ]);
-
