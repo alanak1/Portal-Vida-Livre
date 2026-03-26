@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base href="/frontend/">
+    <title>Confirmar cadastro | Portal Vida Livre</title>
+    <link rel="stylesheet" href="./assets/css/styles.css">
+</head>
+<body data-page="confirmar-email">
+    <header class="site-header">
+        <div class="container header-row">
+            <a class="brand" href="./index.html">Portal Vida Livre</a>
+            <nav class="nav">
+                <a href="./login.html">Entrar</a>
+                <a href="./cadastro.html">Cadastro</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="panel">
+            <h1>Confirmar cadastro</h1>
+            <p class="page-text" data-status-text>Estamos validando seu link de confirmacao.</p>
+            <div class="message hidden" data-message></div>
+
+            <p class="page-text">
+                <a href="./login.html" data-login-link>Ir para login</a>
+            </p>
+            <p class="page-text">
+                <a href="./cadastro.html">Voltar ao cadastro</a>
+            </p>
+        </section>
+    </main>
+
+    <script src="./assets/js/api.js" defer></script>
+    <script src="./assets/js/auth.js" defer></script>
+    <script src="./assets/js/confirmar-email.js" defer></script>
+</body>
+</html>

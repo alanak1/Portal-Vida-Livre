@@ -54,6 +54,34 @@ function schema_file_path(): string
     return dirname(__DIR__) . '/database/schema.sql';
 }
 
+function table_has_column(string $table, string $column): bool
+{
+    $statement = db()->prepare(
+        'SELECT COUNT(*)
+         FROM information_schema.columns
+         WHERE table_schema = DATABASE()
+           AND table_name = :table
+           AND column_name = :column'
+    );
+    $statement->execute([
+        'table' => $table,
+        'column' => $column,
+    ]);
+
+    return (int) $statement->fetchColumn() > 0;
+}
+
+function sync_schema_additions(): void
+{
+    if (!table_has_column('users', 'email_verified_at')) {
+        db()->exec(
+            'ALTER TABLE users
+             ADD COLUMN email_verified_at DATETIME NULL
+             AFTER password_hash'
+        );
+    }
+}
+
 function split_sql_statements(string $sql): array
 {
     $statements = [];
@@ -102,5 +130,7 @@ function run_schema(): void
     foreach (split_sql_statements($sql) as $statement) {
         db()->exec($statement);
     }
+
+    sync_schema_additions();
 }
 

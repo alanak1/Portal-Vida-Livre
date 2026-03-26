@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       PortalVidaLivreAuth.showMessage(response.message, "success");
       form.reset();
       window.setTimeout(() => {
-        window.location.assign("/frontend/login.html?status=registered");
+        window.location.assign("/frontend/login.html?status=verification-pending");
       }, 500);
     } catch (error) {
       PortalVidaLivreAuth.applyErrors(form, error.errors || {});

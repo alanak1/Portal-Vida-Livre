@@ -184,6 +184,9 @@
     const status = new URLSearchParams(window.location.search).get("status");
     const messages = {
       registered: "Cadastro realizado com sucesso. Faca login para continuar.",
+      "verification-pending":
+        "Cadastro realizado. Verifique seu e-mail para confirmar a conta antes de entrar.",
+      "email-verified": "E-mail confirmado com sucesso. Agora voce pode entrar.",
       "password-reset": "Senha redefinida com sucesso. Faca login com a nova senha.",
       "logged-out": "Sessao encerrada com sucesso.",
     };

@@ -37,8 +37,16 @@ if ($passwordConfirmation === '') {
     add_error($errors, 'password_confirmation', 'A confirmacao deve ser igual a senha.');
 }
 
-if ($email !== '' && find_user_by_email($email) !== null) {
-    add_error($errors, 'email', 'Este e-mail ja esta cadastrado.');
+if ($email !== '') {
+    $existingUser = find_user_by_email($email);
+
+    if ($existingUser !== null) {
+        $message = user_email_is_verified($existingUser)
+            ? 'Este e-mail ja esta cadastrado.'
+            : 'Este e-mail ja possui um cadastro pendente. Tente entrar para receber um novo link de confirmacao.';
+
+        add_error($errors, 'email', $message);
+    }
 }
 
 if (has_errors($errors)) {
@@ -46,17 +54,18 @@ if (has_errors($errors)) {
 }
 
 try {
-    $userId = create_user($name, $email, $password);
+    $userId = register_user_and_send_verification_email($name, $email, $password);
     $user = find_user_by_id($userId);
 } catch (\Throwable $throwable) {
     error_response('Nao foi possivel concluir o cadastro agora.', [], 500);
 }
 
-success_response('Cadastro realizado com sucesso.', [
+success_response('Cadastro realizado. Enviamos um link de confirmacao para seu e-mail.', [
     'user' => $user !== null ? user_public_data($user) : [
         'id' => $userId,
         'name' => $name,
         'email' => $email,
+        'email_verified' => false,
         'created_at' => null,
     ],
 ], 201);
